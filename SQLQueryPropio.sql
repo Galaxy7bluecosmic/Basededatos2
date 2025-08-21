@@ -13,11 +13,15 @@ CREATE TABLE Pedidos (
 );
 
 INSERT INTO Clientees (id_Cli, Nombre, Correo)
-VALUES (1, 'Victor', 'ejemplo@gmail.com');
+VALUES
+(1, 'Victor', 'ejemplo@gmail.com'),
+(2,'Jose','Jose@gmail.com'),
+(3,'Julio','JULIO@gmail.com');
 
 INSERT INTO Pedidos (id_Pedidos, id_Cli, Producto, Fecha)
-VALUES (101, 1, 'Celular Xiaomi note 14', '2025-08-21');
-
-INSERT INTO Pedidos (id_Pedidos, id_Cli, Producto, Fecha)
-VALUES (102, 1, 'Laptop Lenovo', '2025-08-21');
+VALUES 
+(101, 1, 'Celular Xiaomi note 14', '2025-08-21'),
+(102, 1, 'Laptop Lenovo', '2025-08-21'),
+(103,2, 'monitor redragon','2025-08-21'),
+(103,3, 'monitor hp','2025-08-21');
 
