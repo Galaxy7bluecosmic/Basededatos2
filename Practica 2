@@ -1,2 +1,22 @@
 BASE DE DATOS YA DESCARGADA E IMPLEMENTADA para estudiarla con los nuevos temas de la semana 5
 AdventureWorksLT2022
+--probando y practicandoi con la base e datos
+Use AdventureWorksLT2022;
+SELECT FirstName, LastName, CompanyName
+FROM SalesLT.Customer
+WHERE CompanyName LIKE '%Bike%';
+
+SELECT h.SalesOrderID, c.FirstName, c.LastName, h.OrderDate
+FROM SalesLT.SalesOrderHeader h
+INNER JOIN SalesLT.Customer c ON h.CustomerID = c.CustomerID;
+
+SELECT pc.Name AS Categoria, AVG(p.ListPrice) AS PrecioPromedio
+FROM SalesLT.Product p
+INNER JOIN SalesLT.ProductCategory pc ON p.ProductCategoryID = pc.ProductCategoryID
+GROUP BY pc.Name;
+
+SELECT c.FirstName, c.LastName, COUNT(h.SalesOrderID) AS TotalOrdenes
+FROM SalesLT.Customer c
+INNER JOIN SalesLT.SalesOrderHeader h ON c.CustomerID = h.CustomerID
+GROUP BY c.FirstName, c.LastName
+ORDER BY TotalOrdenes DESC;
