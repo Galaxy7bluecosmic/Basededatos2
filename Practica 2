@@ -20,3 +20,30 @@ FROM SalesLT.Customer c
 INNER JOIN SalesLT.SalesOrderHeader h ON c.CustomerID = h.CustomerID
 GROUP BY c.FirstName, c.LastName
 ORDER BY TotalOrdenes DESC;
+
+
+CREATE TABLE SalesLT.ComentariosClientes (
+    ComentarioID INT PRIMARY KEY IDENTITY(1,1),
+    CustomerID INT NOT NULL,
+    Comentario NVARCHAR(255),
+    FechaComentario DATETIME DEFAULT GETDATE(),
+
+    -- Relación con tabla existente (Customer)
+    FOREIGN KEY (CustomerID) REFERENCES SalesLT.Customer(CustomerID)
+);
+
+INSERT INTO SalesLT.ComentariosClientes (CustomerID, Comentario)
+VALUES
+(1, 'Muy buen servicio'),
+(2, 'Entrega rápida'),
+(3, 'El producto llegó defectuoso');
+
+INSERT INTO SalesLT.ComentariosClientes (CustomerID, Comentario)
+VALUES
+(1, 'Muy buen servicio'),
+(2, 'Entrega rápida'),
+(3, 'El producto llegó defectuoso');
+
+SELECT c.FirstName, c.LastName, com.Comentario, com.FechaComentario
+FROM SalesLT.ComentariosClientes com
+INNER JOIN SalesLT.Customer c ON com.CustomerID = c.CustomerID;
