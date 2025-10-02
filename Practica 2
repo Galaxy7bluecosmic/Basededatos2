@@ -94,3 +94,75 @@ PIVOT (
     COUNT(CustomerID) FOR Anio IN ([2019],[2020],[2021],[2022])
 ) AS PivotTable;
 
+CREATE OR ALTER PROCEDURE usp_InsertarPedido
+    @CustomerID INT,
+    @ProductID INT,
+    @Cantidad INT
+AS
+BEGIN
+    BEGIN TRY
+        BEGIN TRAN;
+
+        DECLARE @OrderID INT;
+
+        -- Insertar cabecera del pedido
+        INSERT INTO SalesLT.SalesOrderHeader
+        (OrderDate, CustomerID, ShipMethod, SubTotal, TaxAmt, Freight, TotalDue, rowguid, ModifiedDate)
+        VALUES
+        (GETDATE(), @CustomerID, 'Standard', 0, 0, 0, 0, NEWID(), GETDATE());
+
+        SET @OrderID = SCOPE_IDENTITY();  -- Captura el ID generado
+
+        -- Insertar detalle del pedido
+        INSERT INTO SalesLT.SalesOrderDetail
+        (SalesOrderID, ProductID, OrderQty, UnitPrice, UnitPriceDiscount, rowguid, ModifiedDate)
+        SELECT @OrderID, ProductID, @Cantidad, ListPrice, 0, NEWID(), GETDATE()
+        FROM SalesLT.Product
+        WHERE ProductID = @ProductID;
+
+        -- Confirmar transacción
+        COMMIT TRAN;
+        PRINT 'Pedido registrado correctamente';
+    END TRY
+    BEGIN CATCH
+        -- Revertir si ocurre error
+        ROLLBACK TRAN;
+        PRINT 'Error: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+EXEC usp_InsertarPedido @CustomerID = 1, @ProductID = 680, @Cantidad = 3;
+
+
+
+CREATE OR ALTER PROCEDURE usp_ActualizarCorreoCliente
+    @CustomerID INT,
+    @NuevoCorreo NVARCHAR(50)
+AS
+BEGIN
+    BEGIN TRY
+        BEGIN TRAN;
+
+        -- Verificar existencia del cliente
+        IF NOT EXISTS (SELECT 1 FROM SalesLT.Customer WHERE CustomerID = @CustomerID)
+        BEGIN
+            RAISERROR('Cliente no encontrado', 16, 1);
+            ROLLBACK TRAN;
+            RETURN;
+        END
+
+        -- Actualizar correo
+        UPDATE SalesLT.Customer
+        SET EmailAddress = @NuevoCorreo,
+            ModifiedDate = GETDATE()
+        WHERE CustomerID = @CustomerID;
+
+        COMMIT TRAN;
+        PRINT 'Correo actualizado correctamente';
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRAN;
+        PRINT 'Error: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+EXEC usp_ActualizarCorreoCliente @CustomerID = 1, @NuevoCorreo = 'nuevo@mail.com';
+
