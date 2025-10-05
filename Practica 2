@@ -1,2 +1,34 @@
 https://youtu.be/O766MJUv0O8
+USE AdventureWorksLT2022;
+GO
 
+-- Si existe, eliminarla primero para volver a crearla
+IF OBJECT_ID('dbo.fn_OrdenesPorCliente', 'IF') IS NOT NULL
+    DROP FUNCTION dbo.fn_OrdenesPorCliente;
+GO
+
+-- Crear la función con valor de tabla (Table-Valued Function)
+CREATE FUNCTION dbo.fn_OrdenesPorCliente(@CustomerID INT)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT 
+        c.FirstName + ' ' + c.LastName AS Cliente,
+        h.SalesOrderID,
+        h.OrderDate,
+        p.Name AS Producto,
+        d.OrderQty AS Cantidad,
+        d.UnitPrice AS PrecioUnitario,
+        (d.OrderQty * d.UnitPrice) AS Subtotal
+    FROM SalesLT.SalesOrderHeader h
+    INNER JOIN SalesLT.SalesOrderDetail d ON h.SalesOrderID = d.SalesOrderID
+    INNER JOIN SalesLT.Product p ON d.ProductID = p.ProductID
+    INNER JOIN SalesLT.Customer c ON h.CustomerID = c.CustomerID
+    WHERE h.CustomerID = @CustomerID
+);
+GO
+
+-- Ejemplo: mostrar todas las órdenes del cliente con ID 2
+SELECT * 
+FROM dbo.fn_OrdenesPorCliente(2);
