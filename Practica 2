@@ -32,3 +32,39 @@ GO
 -- Ejemplo: mostrar todas las órdenes del cliente con ID 2
 SELECT * 
 FROM dbo.fn_OrdenesPorCliente(2);
+
+USE AdventureWorksLT2022;
+GO
+
+-- Si existe, eliminarla primero
+IF OBJECT_ID('dbo.fn_TotalGastadoPorCliente', 'FN') IS NOT NULL
+    DROP FUNCTION dbo.fn_TotalGastadoPorCliente;
+GO
+
+-- Crear función escalar
+CREATE FUNCTION dbo.fn_TotalGastadoPorCliente(@CustomerID INT)
+RETURNS MONEY
+AS
+BEGIN
+    DECLARE @Total MONEY;
+
+    SELECT @Total = SUM(d.OrderQty * d.UnitPrice)
+    FROM SalesLT.SalesOrderHeader h
+    INNER JOIN SalesLT.SalesOrderDetail d
+        ON h.SalesOrderID = d.SalesOrderID
+    WHERE h.CustomerID = @CustomerID;
+
+    -- Si el cliente no tiene órdenes, devolver 0
+    RETURN ISNULL(@Total, 0);
+END;
+GO
+-- Obtener el total gastado por el cliente con ID = 2
+SELECT dbo.fn_TotalGastadoPorCliente(2) AS TotalGastado;
+
+-- Mostrar el total gastado de cada cliente registrado
+SELECT 
+    c.CustomerID,
+    c.FirstName + ' ' + c.LastName AS Cliente,
+    dbo.fn_TotalGastadoPorCliente(c.CustomerID) AS TotalGastado
+FROM SalesLT.Customer c
+ORDER BY TotalGastado DESC;
