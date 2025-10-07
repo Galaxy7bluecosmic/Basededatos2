@@ -68,3 +68,41 @@ SELECT
     dbo.fn_TotalGastadoPorCliente(c.CustomerID) AS TotalGastado
 FROM SalesLT.Customer c
 ORDER BY TotalGastado DESC;
+
+USE AdventureWorksLT2022;
+GO
+
+-- Eliminar si ya existe
+IF OBJECT_ID('dbo.fn_HistorialComprasCliente', 'IF') IS NOT NULL
+    DROP FUNCTION dbo.fn_HistorialComprasCliente;
+GO
+
+-- Crear función con valor de tabla
+CREATE FUNCTION dbo.fn_HistorialComprasCliente(@CustomerID INT)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT 
+        h.SalesOrderID AS NumeroPedido,
+        h.OrderDate AS FechaOrden,
+        p.Name AS Producto,
+        d.OrderQty AS Cantidad,
+        d.UnitPrice AS PrecioUnitario,
+        (d.OrderQty * d.UnitPrice) AS TotalProducto
+    FROM SalesLT.SalesOrderHeader h
+    INNER JOIN SalesLT.SalesOrderDetail d 
+        ON h.SalesOrderID = d.SalesOrderID
+    INNER JOIN SalesLT.Product p 
+        ON d.ProductID = p.ProductID
+    WHERE h.CustomerID = @CustomerID
+);
+GO
+SELECT * 
+FROM dbo.fn_HistorialComprasCliente(2);
+
+SELECT 
+    c.FirstName + ' ' + c.LastName AS Cliente,
+    h.*
+FROM dbo.fn_HistorialComprasCliente(2) h
+JOIN SalesLT.Customer c ON c.CustomerID = 2;
