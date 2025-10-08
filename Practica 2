@@ -106,3 +106,31 @@ SELECT
     h.*
 FROM dbo.fn_HistorialComprasCliente(2) h
 JOIN SalesLT.Customer c ON c.CustomerID = 2;
+
+USE AdventureWorksLT2022;
+GO
+
+IF OBJECT_ID('dbo.fn_NombreCompletoCliente', 'FN') IS NOT NULL
+    DROP FUNCTION dbo.fn_NombreCompletoCliente;
+GO
+
+CREATE FUNCTION dbo.fn_NombreCompletoCliente(@CustomerID INT)
+RETURNS NVARCHAR(200)
+AS
+BEGIN
+    DECLARE @NombreCompleto NVARCHAR(200);
+
+    SELECT @NombreCompleto = FirstName + ' ' + LastName
+    FROM SalesLT.Customer
+    WHERE CustomerID = @CustomerID;
+
+    RETURN @NombreCompleto;
+END;
+GO
+SELECT dbo.fn_NombreCompletoCliente(2) AS NombreCompleto;
+
+SELECT 
+    CustomerID,
+    dbo.fn_NombreCompletoCliente(CustomerID) AS Cliente,
+    CompanyName
+FROM SalesLT.Customer;
