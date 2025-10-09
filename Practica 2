@@ -134,3 +134,39 @@ SELECT
     dbo.fn_NombreCompletoCliente(CustomerID) AS Cliente,
     CompanyName
 FROM SalesLT.Customer;
+USE AdventureWorksLT2022;
+GO
+
+
+-- Tabla principal (lado "uno")
+CREATE TABLE dbo.Cliente (
+    ClienteID INT PRIMARY KEY IDENTITY(1,1),
+    Nombre NVARCHAR(100) NOT NULL
+);
+
+-- Tabla dependiente (lado "muchos")
+CREATE TABLE dbo.Pedido (
+    PedidoID INT PRIMARY KEY IDENTITY(1,1),
+    ClienteID INT NOT NULL,
+    FechaPedido DATE DEFAULT GETDATE(),
+    Monto MONEY NOT NULL,
+    FOREIGN KEY (ClienteID) REFERENCES dbo.Cliente(ClienteID)  -- Relación 1 a muchos
+);
+
+-- Insertar clientes
+INSERT INTO dbo.Cliente (Nombre) VALUES ('Victor Paul'), ('Laura Díaz');
+
+-- Insertar pedidos (varios para un mismo cliente)
+INSERT INTO dbo.Pedido (ClienteID, Monto) VALUES
+(1, 150.00),
+(1, 230.50),
+(2, 99.99);
+
+SELECT 
+    c.Nombre AS Cliente,
+    p.PedidoID,
+    p.FechaPedido,
+    p.Monto
+FROM dbo.Cliente c
+INNER JOIN dbo.Pedido p ON c.ClienteID = p.ClienteID
+ORDER BY c.Nombre;
