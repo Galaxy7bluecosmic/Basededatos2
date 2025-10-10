@@ -170,3 +170,27 @@ SELECT
 FROM dbo.Cliente c
 INNER JOIN dbo.Pedido p ON c.ClienteID = p.ClienteID
 ORDER BY c.Nombre;
+
+CREATE OR ALTER FUNCTION fn_CantidadPedidosCliente(@CustomerID INT)
+RETURNS INT
+AS
+BEGIN
+    DECLARE @Cantidad INT;
+
+    SELECT @Cantidad = COUNT(*)
+    FROM SalesLT.SalesOrderHeader
+    WHERE CustomerID = @CustomerID;
+
+    RETURN ISNULL(@Cantidad, 0);
+END;
+GO
+SELECT 
+    c.CustomerID,
+    c.FirstName + ' ' + c.LastName AS Cliente,
+    h.SalesOrderID,
+    h.OrderDate,
+    dbo.fn_CantidadPedidosCliente(c.CustomerID) AS TotalPedidos
+FROM SalesLT.Customer c
+FULL JOIN SalesLT.SalesOrderHeader h 
+    ON c.CustomerID = h.CustomerID
+ORDER BY c.CustomerID;
