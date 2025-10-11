@@ -194,3 +194,33 @@ FROM SalesLT.Customer c
 FULL JOIN SalesLT.SalesOrderHeader h 
     ON c.CustomerID = h.CustomerID
 ORDER BY c.CustomerID;
+CREATE DATABASE EmpresaDB;
+GO
+
+-- Usar la base de datos
+USE EmpresaDB;
+GO
+
+-- Crear la tabla de empleados
+CREATE TABLE Empleados (
+    ID INT PRIMARY KEY IDENTITY(1,1),
+    Nombre NVARCHAR(100),
+    Cargo NVARCHAR(50),
+    FechaIngreso DATE,
+    Salario DECIMAL(10,2)
+);
+GO
+
+-- Insertar datos
+INSERT INTO Empleados (Nombre, Cargo, FechaIngreso, Salario)
+VALUES 
+('Ana Torres', 'Ingeniera de Seguridad', '2022-03-15', 4500.00),
+('Luis Pérez', 'Técnico de Redes', '2021-11-01', 3200.00),
+('María Gómez', 'Analista de Datos', '2023-01-10', 5000.00);
+GO
+
+-- Consultar empleados con salario mayor a 4000
+SELECT Nombre, Cargo, Salario
+FROM Empleados
+WHERE Salario > 4000;
+GO
