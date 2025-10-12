@@ -224,3 +224,17 @@ SELECT Nombre, Cargo, Salario
 FROM Empleados
 WHERE Salario > 4000;
 GO
+-- Crear una tabla llamada Empleados
+CREATE TABLE Empleados (
+    ID INT PRIMARY KEY,
+    Nombre NVARCHAR(50),
+    Cargo NVARCHAR(50),
+    Salario DECIMAL(10, 2)
+);
+
+-- Insertar un registro
+INSERT INTO Empleados (ID, Nombre, Cargo, Salario)
+VALUES (1, 'Ana Torres', 'Analista', 3500.00);
+
+-- Consultar todos los empleados
+SELECT * FROM Empleados;
