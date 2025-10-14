@@ -269,3 +269,45 @@ VALUES (1, 'Ana Torres', 'Analista', 3500.00);
 
 -- Consultar todos los empleados
 SELECT * FROM Empleados;
+-- Tabla de Estudiantes
+CREATE TABLE Estudiantes (
+    EstudianteID INT PRIMARY KEY,
+    Nombre NVARCHAR(100)
+);
+
+-- Tabla de Cursos
+CREATE TABLE Cursos (
+    CursoID INT PRIMARY KEY,
+    NombreCurso NVARCHAR(100)
+);
+
+-- Tabla intermedia: Inscripciones
+CREATE TABLE Inscripciones (
+    EstudianteID INT,
+    CursoID INT,
+    FechaInscripcion DATE,
+    PRIMARY KEY (EstudianteID, CursoID),
+    FOREIGN KEY (EstudianteID) REFERENCES Estudiantes(EstudianteID),
+    FOREIGN KEY (CursoID) REFERENCES Cursos(CursoID)
+);
+
+-- Insertar estudiantes
+INSERT INTO Estudiantes (EstudianteID, Nombre)
+VALUES (1, 'Luis Gómez'), (2, 'Carla Ruiz');
+
+-- Insertar cursos
+INSERT INTO Cursos (CursoID, NombreCurso)
+VALUES (101, 'Matemáticas'), (102, 'Historia');
+
+-- Inscribir estudiantes en cursos
+INSERT INTO Inscripciones (EstudianteID, CursoID, FechaInscripcion)
+VALUES 
+(1, 101, '2025-10-01'),
+(1, 102, '2025-10-02'),
+(2, 101, '2025-10-03');
+
+-- Consultar cursos por estudiante
+SELECT e.Nombre AS Estudiante, c.NombreCurso, i.FechaInscripcion
+FROM Inscripciones i
+JOIN Estudiantes e ON i.EstudianteID = e.EstudianteID
+JOIN Cursos c ON i.CursoID = c.CursoID;
