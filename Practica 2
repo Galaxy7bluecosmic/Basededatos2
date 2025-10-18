@@ -437,3 +437,29 @@ SELECT e.Nombre AS Estudiante, c.NombreCurso, i.FechaInscripcion
 FROM Inscripciones i
 JOIN Estudiantes e ON i.EstudianteID = e.EstudianteID
 JOIN Cursos c ON i.CursoID = c.CursoID;
+USE AdventureWorksLT2022;
+GO
+
+-- Procedimiento que inserta cliente y pedido en una sola transacción
+CREATE OR ALTER PROCEDURE usp_InsertCustomerAndOrder
+    @FirstName NVARCHAR(50),
+    @LastName NVARCHAR(50),
+    @EmailAddress NVARCHAR(100),
+    @Phone NVARCHAR(25),
+    @OrderDate DATETIME,
+    @ShipMethod NVARCHAR(50),
+    @SubTotal MONEY
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @NewCustomerID INT;
+    DECLARE @NewOrderID INT;
+
+    BEGIN TRY
+        BEGIN TRAN;
+
+        -- Insertar cliente
+        INSERT INTO SalesLT.Customer
+            (FirstName, LastName, EmailAddress, Phone, NameStyle)
+        VALUES
