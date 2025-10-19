@@ -463,3 +463,23 @@ BEGIN
         INSERT INTO SalesLT.Customer
             (FirstName, LastName, EmailAddress, Phone, NameStyle)
         VALUES
+-- Crear la tabla de empleados
+CREATE TABLE Empleados (
+    ID INT PRIMARY KEY,
+    Nombre VARCHAR(100),
+    Cargo VARCHAR(50),
+    FechaIngreso DATE,
+    Salario DECIMAL(10, 2)
+);
+
+-- Insertar algunos registros
+INSERT INTO Empleados (ID, Nombre, Cargo, FechaIngreso, Salario)
+VALUES
+(1, 'Ana Torres', 'Gerente', '2022-01-15', 4500.00),
+(2, 'Luis Pérez', 'Analista', '2023-03-10', 3200.00),
+(3, 'María Gómez', 'Desarrollador', '2024-07-01', 3800.00);
+
+-- Consultar empleados con salario mayor a 3500
+SELECT Nombre, Cargo, Salario
+FROM Empleados
+WHERE Salario > 3500;
