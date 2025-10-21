@@ -20,3 +20,27 @@ SELECT *
 FROM Usuarios
 WHERE NombreUsuario = 'usuario1'
   AND ContraseñaHash = HASHBYTES('SHA2_256', CONVERT(VARBINARY(100), @Intento));
+-- Crear tabla con contraseña cifrada
+CREATE TABLE UsuariosSeguros (
+    UsuarioID INT PRIMARY KEY,
+    NombreUsuario NVARCHAR(50),
+    ContraseñaCifrada VARBINARY(MAX)
+);
+
+-- Insertar una contraseña cifrada
+DECLARE @FraseSecreta NVARCHAR(128) = 'MiFraseDeCifradoSegura';
+DECLARE @Contraseña NVARCHAR(100) = 'Clave123!';
+INSERT INTO UsuariosSeguros (UsuarioID, NombreUsuario, ContraseñaCifrada)
+VALUES (
+    1,
+    'usuario2',
+    EncryptByPassPhrase(@FraseSecreta, @Contraseña)
+);
+
+-- Recuperar la contraseña (solo si tienes la frase secreta)
+DECLARE @FraseSecreta NVARCHAR(128) = 'MiFraseDeCifradoSegura';
+SELECT 
+    UsuarioID,
+    NombreUsuario,
+    CONVERT(NVARCHAR(100), DecryptByPassPhrase(@FraseSecreta, ContraseñaCifrada)) AS ContraseñaRecuperada
+FROM UsuariosSeguros;
