@@ -44,3 +44,33 @@ SELECT
     NombreUsuario,
     CONVERT(NVARCHAR(100), DecryptByPassPhrase(@FraseSecreta, ContraseñaCifrada)) AS ContraseñaRecuperada
 FROM UsuariosSeguros;
+-- Crear tabla con salt y hash
+CREATE TABLE UsuariosConSalt (
+    UsuarioID INT PRIMARY KEY,
+    NombreUsuario NVARCHAR(50),
+    Salt NVARCHAR(50),
+    ContraseñaHash VARBINARY(64)
+);
+
+-- Insertar una contraseña con salt
+DECLARE @Contraseña NVARCHAR(100) = 'MiClaveUltraSegura!';
+DECLARE @Salt NVARCHAR(50) = CONVERT(NVARCHAR(50), NEWID()); -- Genera un salt aleatorio
+DECLARE @ContraseñaConSalt NVARCHAR(150) = @Contraseña + @Salt;
+
+INSERT INTO UsuariosConSalt (UsuarioID, NombreUsuario, Salt, ContraseñaHash)
+VALUES (
+    1,
+    'usuario3',
+    @Salt,
+    HASHBYTES('SHA2_256', CONVERT(VARBINARY(150), @ContraseñaConSalt))
+);
+
+-- Verificar contraseña
+DECLARE @Intento NVARCHAR(100) = 'MiClaveUltraSegura!';
+DECLARE @SaltObtenido NVARCHAR(50) = (SELECT Salt FROM UsuariosConSalt WHERE NombreUsuario = 'usuario3');
+DECLARE @IntentoConSalt NVARCHAR(150) = @Intento + @SaltObtenido;
+
+SELECT *
+FROM UsuariosConSalt
+WHERE NombreUsuario = 'usuario3'
+  AND ContraseñaHash = HASHBYTES('SHA2_256', CONVERT(VARBINARY(150), @IntentoConSalt));
