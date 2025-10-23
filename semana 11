@@ -1,0 +1,30 @@
+-- Funciones agregadas
+CREATE TABLE Vuelos (
+    IdVuelo INT PRIMARY KEY,
+    Matricula VARCHAR(10),
+    Destino VARCHAR(50),
+    Rumbo VARCHAR(50),
+    HoraLlegada DATETIME
+);
+DECLARE @DestinoFiltro VARCHAR(50) = 'Arequipa';
+DECLARE @RumboFiltro VARCHAR(50) = 'Sur-Oeste';
+
+-- Grupo 1: Aviones con destino específico
+SELECT 
+    'Grupo por Destino' AS Grupo,
+    COUNT(*) AS TotalVuelos,
+    MIN(HoraLlegada) AS PrimerLlegada,
+    MAX(HoraLlegada) AS UltimaLlegada,
+    AVG(DATEDIFF(MINUTE, '2025-10-22 00:00:00', HoraLlegada)) AS PromedioMinutosDesdeMedianoche
+FROM Vuelos
+WHERE Destino = @DestinoFiltro;
+
+-- Grupo 2: Aviones con rumbo específico
+SELECT 
+    'Grupo por Rumbo' AS Grupo,
+    COUNT(*) AS TotalVuelos,
+    MIN(HoraLlegada) AS PrimerLlegada,
+    MAX(HoraLlegada) AS UltimaLlegada,
+    AVG(DATEDIFF(MINUTE, '2025-10-22 00:00:00', HoraLlegada)) AS PromedioMinutosDesdeMedianoche
+FROM Vuelos
+WHERE Rumbo = @RumboFiltro;
