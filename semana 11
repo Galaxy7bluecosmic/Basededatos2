@@ -54,3 +54,43 @@ GROUP BY
         WHEN Rumbo = 'Norte-Este' THEN 'Grupo: Rumbo Norte-Este'
         ELSE 'Otro Grupo'
     END;
+
+
+CREATE TABLE Vuelos (
+    IdVuelo INT PRIMARY KEY,
+    Matricula VARCHAR(10),
+    Destino VARCHAR(50),
+    Rumbo VARCHAR(50),
+    HoraLlegada DATETIME
+);
+WITH GrupoDestino AS (
+    SELECT *
+    FROM Vuelos
+    WHERE Destino = 'Tacna'
+),
+GrupoRumbo AS (
+    SELECT *
+    FROM Vuelos
+    WHERE Rumbo = 'Sur-Este'
+)
+
+-- Estadísticas para vuelos con destino específico
+SELECT 
+    'Grupo por Destino: Tacna' AS Grupo,
+    COUNT(*) AS TotalVuelos,
+    MIN(HoraLlegada) AS PrimerLlegada,
+    MAX(HoraLlegada) AS UltimaLlegada,
+    AVG(DATEDIFF(MINUTE, '2025-10-24 00:00:00', HoraLlegada)) AS PromedioMinutosDesdeMedianoche
+FROM GrupoDestino
+
+UNION ALL
+
+-- Estadísticas para vuelos con rumbo específico
+SELECT 
+    'Grupo por Rumbo: Sur-Este' AS Grupo,
+    COUNT(*) AS TotalVuelos,
+    MIN(HoraLlegada) AS PrimerLlegada,
+    MAX(HoraLlegada) AS UltimaLlegada,
+    AVG(DATEDIFF(MINUTE, '2025-10-24 00:00:00', HoraLlegada)) AS PromedioMinutosDesdeMedianoche
+FROM GrupoRumbo;
+
