@@ -28,3 +28,29 @@ SELECT
     AVG(DATEDIFF(MINUTE, '2025-10-22 00:00:00', HoraLlegada)) AS PromedioMinutosDesdeMedianoche
 FROM Vuelos
 WHERE Rumbo = @RumboFiltro;
+
+CREATE TABLE Vuelos (
+    IdVuelo INT PRIMARY KEY,
+    Matricula VARCHAR(10),
+    Destino VARCHAR(50),
+    Rumbo VARCHAR(50),
+    HoraLlegada DATETIME
+);
+SELECT 
+    CASE 
+        WHEN Destino = 'Cusco' THEN 'Grupo: Destino Cusco'
+        WHEN Rumbo = 'Norte-Este' THEN 'Grupo: Rumbo Norte-Este'
+        ELSE 'Otro Grupo'
+    END AS Grupo,
+    COUNT(*) AS TotalVuelos,
+    MIN(HoraLlegada) AS PrimerLlegada,
+    MAX(HoraLlegada) AS UltimaLlegada,
+    AVG(DATEDIFF(MINUTE, '2025-10-23 00:00:00', HoraLlegada)) AS PromedioMinutosDesdeMedianoche
+FROM Vuelos
+WHERE Destino = 'Cusco' OR Rumbo = 'Norte-Este'
+GROUP BY 
+    CASE 
+        WHEN Destino = 'Cusco' THEN 'Grupo: Destino Cusco'
+        WHEN Rumbo = 'Norte-Este' THEN 'Grupo: Rumbo Norte-Este'
+        ELSE 'Otro Grupo'
+    END;
