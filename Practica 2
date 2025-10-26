@@ -121,3 +121,44 @@ EXEC ObtenerEstadisticasVuelos
     @DestinoFiltro = 'Iquitos',
     @RumboFiltro = 'Norte-Oeste',
     @FechaFiltro = '2025-10-25';
+
+CREATE TABLE Ventas (
+    IdVenta INT PRIMARY KEY,
+    FechaVenta DATE,
+    HoraVenta DATETIME,
+    Tienda VARCHAR(50),
+    CategoriaProducto VARCHAR(50),
+    Monto DECIMAL(10,2)
+);
+DECLARE @CategoriaFiltro VARCHAR(50) = 'Electrodomésticos';
+DECLARE @TiendaFiltro VARCHAR(50) = 'Tienda Central';
+DECLARE @FechaFiltro DATE = '2025-10-26';
+
+-- Grupo 1: Ventas por categoría
+SELECT 
+    'Grupo: Categoría ' + @CategoriaFiltro AS Grupo,
+    COUNT(*) AS TotalVentas,
+    SUM(Monto) AS MontoTotal,
+    MIN(Monto) AS VentaMinima,
+    MAX(Monto) AS VentaMaxima,
+    AVG(Monto) AS PromedioVenta,
+    MIN(HoraVenta) AS PrimeraVenta,
+    MAX(HoraVenta) AS UltimaVenta
+FROM Ventas
+WHERE CategoriaProducto = @CategoriaFiltro AND FechaVenta = @FechaFiltro
+
+UNION ALL
+
+-- Grupo 2: Ventas por tienda
+SELECT 
+    'Grupo: Tienda ' + @TiendaFiltro AS Grupo,
+    COUNT(*) AS TotalVentas,
+    SUM(Monto) AS MontoTotal,
+    MIN(Monto) AS VentaMinima,
+    MAX(Monto) AS VentaMaxima,
+    AVG(Monto) AS PromedioVenta,
+    MIN(HoraVenta) AS PrimeraVenta,
+    MAX(HoraVenta) AS UltimaVenta
+FROM Ventas
+WHERE Tienda = @TiendaFiltro AND FechaVenta = @FechaFiltro;
+
