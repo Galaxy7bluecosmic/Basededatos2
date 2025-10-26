@@ -74,3 +74,50 @@ SELECT *
 FROM UsuariosConSalt
 WHERE NombreUsuario = 'usuario3'
   AND ContraseñaHash = HASHBYTES('SHA2_256', CONVERT(VARBINARY(150), @IntentoConSalt));
+CREATE TABLE Vuelos (
+    IdVuelo INT PRIMARY KEY,
+    Matricula VARCHAR(10),
+    TipoAeronave VARCHAR(30),
+    Destino VARCHAR(50),
+    Rumbo VARCHAR(50),
+    FechaVuelo DATE,
+    HoraLlegada DATETIME
+);
+CREATE PROCEDURE ObtenerEstadisticasVuelos
+    @DestinoFiltro VARCHAR(50),
+    @RumboFiltro VARCHAR(50),
+    @FechaFiltro DATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Grupo por destino
+    SELECT 
+        'Grupo por Destino' AS Grupo,
+        TipoAeronave,
+        COUNT(*) AS TotalVuelos,
+        MIN(HoraLlegada) AS PrimerLlegada,
+        MAX(HoraLlegada) AS UltimaLlegada,
+        AVG(DATEDIFF(MINUTE, CAST(@FechaFiltro AS DATETIME), HoraLlegada)) AS PromedioMinutosDesdeMedianoche
+    FROM Vuelos
+    WHERE Destino = @DestinoFiltro AND FechaVuelo = @FechaFiltro
+    GROUP BY TipoAeronave
+
+    UNION ALL
+
+    -- Grupo por rumbo
+    SELECT 
+        'Grupo por Rumbo' AS Grupo,
+        TipoAeronave,
+        COUNT(*) AS TotalVuelos,
+        MIN(HoraLlegada) AS PrimerLlegada,
+        MAX(HoraLlegada) AS UltimaLlegada,
+        AVG(DATEDIFF(MINUTE, CAST(@FechaFiltro AS DATETIME), HoraLlegada)) AS PromedioMinutosDesdeMedianoche
+    FROM Vuelos
+    WHERE Rumbo = @RumboFiltro AND FechaVuelo = @FechaFiltro
+    GROUP BY TipoAeronave;
+END;
+EXEC ObtenerEstadisticasVuelos 
+    @DestinoFiltro = 'Iquitos',
+    @RumboFiltro = 'Norte-Oeste',
+    @FechaFiltro = '2025-10-25';
