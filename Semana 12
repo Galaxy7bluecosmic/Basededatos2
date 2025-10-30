@@ -36,13 +36,13 @@ INSERT INTO VehiculosVendidos (IdVehiculo, Comprador, PrecioFinal, DescripcionVe
 SELECT 
     IdVehiculo,
     'Juan Pérez',
-    PrecioBase + 5000,  -- el precio final fue mayor
+    PrecioBase + 5000,  --Mayor precio se subasta
     CONCAT('Vehículo ', Marca, ' ', Modelo, ' vendido el ', FORMAT(GETDATE(), 'dd/MM/yyyy'))
 FROM VehiculosSubasta
 WHERE IdVehiculo = 2;
 
 DELETE FROM VehiculosSubasta WHERE IdVehiculo = 2;
-
+--se asigna el comprador del auto y demas datos
 SELECT 
     V.IdVenta,
     CONCAT('Comprador: ', Comprador) AS DetalleComprador,
