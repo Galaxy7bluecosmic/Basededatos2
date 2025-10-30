@@ -1,4 +1,4 @@
--- Crear tabla de usuarios con contraseña hasheada
+i-- Crear tabla de usuarios con contraseña hasheada
 CREATE TABLE Usuarios (
     UsuarioID INT PRIMARY KEY,
     NombreUsuario NVARCHAR(50),
@@ -162,3 +162,15 @@ SELECT
 FROM Ventas
 WHERE Tienda = @TiendaFiltro AND FechaVenta = @FechaFiltro;
 
+CREATE TABLE Empleados (
+    ID INT PRIMARY KEY,
+    Nombre VARCHAR(100),
+    Cargo VARCHAR(50),
+    FechaIngreso DATE,
+    Salario DECIMAL(10, 2)
+);
+INSERT INTO Empleados (ID, Nombre, Cargo, FechaIngreso, Salario)
+VALUES
+(1, 'Ana Torres', 'Gerente', '2022-03-15', 8500.00),
+(2, 'Luis Pérez', 'Analista', '2023-01-10', 5200.00),
+(3, 'María Gómez', 'Desarrollador', '2024-06-01', 6000.00);
