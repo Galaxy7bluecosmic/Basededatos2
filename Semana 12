@@ -1,0 +1,53 @@
+
+CREATE TABLE VehiculosSubasta (
+    IdVehiculo INT IDENTITY(1,1) PRIMARY KEY,
+    Marca NVARCHAR(50),
+    Modelo NVARCHAR(50),
+    Año INT,
+    PrecioBase DECIMAL(10,2),
+    FechaInicioSubasta DATETIME DEFAULT GETDATE(),
+    Estado NVARCHAR(20) DEFAULT 'En Subasta'
+);
+
+CREATE TABLE VehiculosVendidos (
+    IdVenta INT IDENTITY(1,1) PRIMARY KEY,
+    IdVehiculo INT,
+    Comprador NVARCHAR(100),
+    PrecioFinal DECIMAL(10,2),
+    FechaVenta DATETIME DEFAULT GETDATE(),
+    DescripcionVenta NVARCHAR(200)
+);
+
+INSERT INTO VehiculosSubasta (Marca, Modelo, Año, PrecioBase)
+VALUES 
+(' Toyota ', 'Hilux', 2022, 25000),
+(' Ford', 'Mustang', 2021, 35000),
+('   BMW', 'X5', 2020, 45000);
+
+SELECT 
+    IdVehiculo,
+    CONCAT(UPPER(LTRIM(RTRIM(Marca))), ' ', Modelo, ' - ', Año) AS Vehiculo,
+    FORMAT(FechaInicioSubasta, 'dd/MM/yyyy hh:mm tt') AS FechaInicio,
+    CONCAT('$', FORMAT(PrecioBase, '#,##0.00')) AS PrecioBase,
+    Estado
+FROM VehiculosSubasta;
+
+INSERT INTO VehiculosVendidos (IdVehiculo, Comprador, PrecioFinal, DescripcionVenta)
+SELECT 
+    IdVehiculo,
+    'Juan Pérez',
+    PrecioBase + 5000,  -- el precio final fue mayor
+    CONCAT('Vehículo ', Marca, ' ', Modelo, ' vendido el ', FORMAT(GETDATE(), 'dd/MM/yyyy'))
+FROM VehiculosSubasta
+WHERE IdVehiculo = 2;
+
+DELETE FROM VehiculosSubasta WHERE IdVehiculo = 2;
+
+SELECT 
+    V.IdVenta,
+    CONCAT('Comprador: ', Comprador) AS DetalleComprador,
+    CONCAT('Vehículo ID: ', V.IdVehiculo) AS DetalleVehiculo,
+    CONCAT('$', FORMAT(PrecioFinal, '#,##0.00')) AS PrecioFinal,
+    FORMAT(FechaVenta, 'dd-MM-yyyy hh:mm tt') AS FechaDeVenta,
+    UPPER(DescripcionVenta) AS Descripcion
+FROM VehiculosVendidos V;
