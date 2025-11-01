@@ -174,3 +174,22 @@ VALUES
 (1, 'Ana Torres', 'Gerente', '2022-03-15', 8500.00),
 (2, 'Luis Pérez', 'Analista', '2023-01-10', 5200.00),
 (3, 'María Gómez', 'Desarrollador', '2024-06-01', 6000.00);
+
+CREATE TABLE Departamentos (
+    DepartamentoID INT PRIMARY KEY,
+    NombreDepartamento VARCHAR(100),
+    Ubicacion VARCHAR(100)
+);
+INSERT INTO Departamentos (DepartamentoID, NombreDepartamento, Ubicacion)
+VALUES
+(1, 'Recursos Humanos', 'Arequipa'),
+(2, 'TI', 'Lima'),
+(3, 'Finanzas', 'Cusco');
+INSERT INTO Empleados (EmpleadoID, Nombre, Cargo, DepartamentoID, FechaIngreso)
+VALUES
+(101, 'Carlos Ruiz', 'Analista', 2, '2023-05-10'),
+(102, 'Lucía Mendoza', 'Contadora', 3, '2022-11-20'),
+(103, 'Jorge Salas', 'Reclutador', 1, '2024-01-15');
+SELECT e.Nombre, e.Cargo, d.NombreDepartamento, d.Ubicacion
+FROM Empleados e
+JOIN Departamentos d ON e.DepartamentoID = d.DepartamentoID;
