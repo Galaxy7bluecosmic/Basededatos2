@@ -1,2 +1,35 @@
 https://youtu.be/Qjx6h498dMU
 los comits sirven para poder guardae lo echo en sql y asi tener una copia de respaldo en caso de errores y no perder todo el progreso
+CREATE TABLE Asistencia (
+    IdRegistro INT PRIMARY KEY,
+    IdEmpleado INT,
+    NombreEmpleado VARCHAR(100),
+    Departamento VARCHAR(50),
+    Fecha DATE,
+    HoraEntrada DATETIME,
+    HoraSalida DATETIME
+);
+DECLARE @DepartamentoFiltro VARCHAR(50) = 'Logística';
+DECLARE @FechaFiltro DATE = '2025-10-27';
+
+-- Grupo 1: Empleados por departamento
+SELECT 
+    'Grupo: Departamento ' + @DepartamentoFiltro AS Grupo,
+    COUNT(*) AS TotalRegistros,
+    MIN(HoraEntrada) AS EntradaMasTemprana,
+    MAX(HoraEntrada) AS EntradaMasTardia,
+    AVG(DATEDIFF(MINUTE, HoraEntrada, HoraSalida)) / 60.0 AS PromedioHorasTrabajadas
+FROM Asistencia
+WHERE Departamento = @DepartamentoFiltro AND Fecha = @FechaFiltro
+
+UNION ALL
+
+-- Grupo 2: Empleados que ingresaron antes de las 8:00 AM
+SELECT 
+    'Grupo: Entrada antes de las 8:00 AM' AS Grupo,
+    COUNT(*) AS TotalRegistros,
+    MIN(HoraEntrada) AS EntradaMasTemprana,
+    MAX(HoraEntrada) AS EntradaMasTardia,
+    AVG(DATEDIFF(MINUTE, HoraEntrada, HoraSalida)) / 60.0 AS PromedioHorasTrabajadas
+FROM Asistencia
+WHERE HoraEntrada < DATEADD(HOUR, 8, CAST(@FechaFiltro AS DATETIME)) AND Fecha = @FechaFiltro;
