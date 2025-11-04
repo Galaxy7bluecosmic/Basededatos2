@@ -1,4 +1,4 @@
-https://youtu.be/Qjx6h498dMU
+8https://youtu.be/Qjx6h498dMU
 los comits sirven para poder guardae lo echo en sql y asi tener una copia de respaldo en caso de errores y no perder todo el progreso
 CREATE TABLE Asistencia (
     IdRegistro INT PRIMARY KEY,
@@ -33,3 +33,39 @@ SELECT
     AVG(DATEDIFF(MINUTE, HoraEntrada, HoraSalida)) / 60.0 AS PromedioHorasTrabajadas
 FROM Asistencia
 WHERE HoraEntrada < DATEADD(HOUR, 8, CAST(@FechaFiltro AS DATETIME)) AND Fecha = @FechaFiltro;
+
+CREATE TABLE Proyectos (
+    IdProyecto INT PRIMARY KEY,
+    NombreProyecto VARCHAR(100),
+    Ciudad VARCHAR(50),
+    EstadoProyecto VARCHAR(30), -- Ej: 'En ejecución', 'Finalizado', 'Suspendido'
+    FechaInicio DATE,
+    FechaFin DATE,
+    CostoEstimado DECIMAL(12,2)
+);
+DECLARE @CiudadFiltro VARCHAR(50) = 'Arequipa';
+DECLARE @EstadoFiltro VARCHAR(30) = 'En ejecución';
+
+-- Grupo 1: Proyectos en ciudad específica
+SELECT 
+    'Grupo: Ciudad ' + @CiudadFiltro AS Grupo,
+    COUNT(*) AS TotalProyectos,
+    MIN(FechaInicio) AS InicioMasTemprano,
+    MAX(FechaFin) AS FinMasTardio,
+    SUM(CostoEstimado) AS CostoTotal,
+    AVG(DATEDIFF(DAY, FechaInicio, FechaFin)) AS PromedioDuracionDias
+FROM Proyectos
+WHERE Ciudad = @CiudadFiltro
+
+UNION ALL
+
+-- Grupo 2: Proyectos con estado específico
+SELECT 
+    'Grupo: Estado ' + @EstadoFiltro AS Grupo,
+    COUNT(*) AS TotalProyectos,
+    MIN(FechaInicio) AS InicioMasTemprano,
+    MAX(FechaFin) AS FinMasTardio,
+    SUM(CostoEstimado) AS CostoTotal,
+    AVG(DATEDIFF(DAY, FechaInicio, FechaFin)) AS PromedioDuracionDias
+FROM Proyectos
+WHERE EstadoProyecto = @EstadoFiltro;
