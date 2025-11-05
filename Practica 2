@@ -1,195 +1,30 @@
-i-- Crear tabla de usuarios con contraseña hasheada
-CREATE TABLE Usuarios (
-    UsuarioID INT PRIMARY KEY,
-    NombreUsuario NVARCHAR(50),
-    ContraseñaHash VARBINARY(64)
+CREATE TABLE Atenciones (
+    IdAtencion INT PRIMARY KEY,
+    IdPaciente INT,
+    NombrePaciente VARCHAR(100),
+    Especialidad VARCHAR(50),
+    FechaAtencion DATE,
+    HoraEntrada DATETIME,
+    HoraSalida DATETIME,
+    Costo DECIMAL(10,2)
 );
+DECLARE @FechaInicio DATE = '2025-10-01';
+DECLARE @FechaFin DATE = '2025-10-31';
+DECLARE @EspecialidadFiltro VARCHAR(50) = 'Cardiología';
 
--- Insertar una contraseña usando SHA-256
-DECLARE @Contraseña NVARCHAR(100) = 'MiContraseñaSegura123';
-INSERT INTO Usuarios (UsuarioID, NombreUsuario, ContraseñaHash)
-VALUES (
-    1,
-    'usuario1',
-    HASHBYTES('SHA2_256', CONVERT(VARBINARY(100), @Contraseña))
-);
-
--- Verificar contraseña (ejemplo de comparación)
-DECLARE @Intento NVARCHAR(100) = 'MiContraseñaSegura123';
-SELECT *
-FROM Usuarios
-WHERE NombreUsuario = 'usuario1'
-  AND ContraseñaHash = HASHBYTES('SHA2_256', CONVERT(VARBINARY(100), @Intento));
--- Crear tabla con contraseña cifrada
-CREATE TABLE UsuariosSeguros (
-    UsuarioID INT PRIMARY KEY,
-    NombreUsuario NVARCHAR(50),
-    ContraseñaCifrada VARBINARY(MAX)
-);
-
--- Insertar una contraseña cifrada
-DECLARE @FraseSecreta NVARCHAR(128) = 'MiFraseDeCifradoSegura';
-DECLARE @Contraseña NVARCHAR(100) = 'Clave123!';
-INSERT INTO UsuariosSeguros (UsuarioID, NombreUsuario, ContraseñaCifrada)
-VALUES (
-    1,
-    'usuario2',
-    EncryptByPassPhrase(@FraseSecreta, @Contraseña)
-);
-
--- Recuperar la contraseña (solo si tienes la frase secreta)
-DECLARE @FraseSecreta NVARCHAR(128) = 'MiFraseDeCifradoSegura';
 SELECT 
-    UsuarioID,
-    NombreUsuario,
-    CONVERT(NVARCHAR(100), DecryptByPassPhrase(@FraseSecreta, ContraseñaCifrada)) AS ContraseñaRecuperada
-FROM UsuariosSeguros;
--- Crear tabla con salt y hash
-CREATE TABLE UsuariosConSalt (
-    UsuarioID INT PRIMARY KEY,
-    NombreUsuario NVARCHAR(50),
-    Salt NVARCHAR(50),
-    ContraseñaHash VARBINARY(64)
-);
-
--- Insertar una contraseña con salt
-DECLARE @Contraseña NVARCHAR(100) = 'MiClaveUltraSegura!';
-DECLARE @Salt NVARCHAR(50) = CONVERT(NVARCHAR(50), NEWID()); -- Genera un salt aleatorio
-DECLARE @ContraseñaConSalt NVARCHAR(150) = @Contraseña + @Salt;
-
-INSERT INTO UsuariosConSalt (UsuarioID, NombreUsuario, Salt, ContraseñaHash)
-VALUES (
-    1,
-    'usuario3',
-    @Salt,
-    HASHBYTES('SHA2_256', CONVERT(VARBINARY(150), @ContraseñaConSalt))
-);
-
--- Verificar contraseña
-DECLARE @Intento NVARCHAR(100) = 'MiClaveUltraSegura!';
-DECLARE @SaltObtenido NVARCHAR(50) = (SELECT Salt FROM UsuariosConSalt WHERE NombreUsuario = 'usuario3');
-DECLARE @IntentoConSalt NVARCHAR(150) = @Intento + @SaltObtenido;
-
-SELECT *
-FROM UsuariosConSalt
-WHERE NombreUsuario = 'usuario3'
-  AND ContraseñaHash = HASHBYTES('SHA2_256', CONVERT(VARBINARY(150), @IntentoConSalt));
-CREATE TABLE Vuelos (
-    IdVuelo INT PRIMARY KEY,
-    Matricula VARCHAR(10),
-    TipoAeronave VARCHAR(30),
-    Destino VARCHAR(50),
-    Rumbo VARCHAR(50),
-    FechaVuelo DATE,
-    HoraLlegada DATETIME
-);
-CREATE PROCEDURE ObtenerEstadisticasVuelos
-    @DestinoFiltro VARCHAR(50),
-    @RumboFiltro VARCHAR(50),
-    @FechaFiltro DATE
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    -- Grupo por destino
-    SELECT 
-        'Grupo por Destino' AS Grupo,
-        TipoAeronave,
-        COUNT(*) AS TotalVuelos,
-        MIN(HoraLlegada) AS PrimerLlegada,
-        MAX(HoraLlegada) AS UltimaLlegada,
-        AVG(DATEDIFF(MINUTE, CAST(@FechaFiltro AS DATETIME), HoraLlegada)) AS PromedioMinutosDesdeMedianoche
-    FROM Vuelos
-    WHERE Destino = @DestinoFiltro AND FechaVuelo = @FechaFiltro
-    GROUP BY TipoAeronave
-
-    UNION ALL
-
-    -- Grupo por rumbo
-    SELECT 
-        'Grupo por Rumbo' AS Grupo,
-        TipoAeronave,
-        COUNT(*) AS TotalVuelos,
-        MIN(HoraLlegada) AS PrimerLlegada,
-        MAX(HoraLlegada) AS UltimaLlegada,
-        AVG(DATEDIFF(MINUTE, CAST(@FechaFiltro AS DATETIME), HoraLlegada)) AS PromedioMinutosDesdeMedianoche
-    FROM Vuelos
-    WHERE Rumbo = @RumboFiltro AND FechaVuelo = @FechaFiltro
-    GROUP BY TipoAeronave;
-END;
-EXEC ObtenerEstadisticasVuelos 
-    @DestinoFiltro = 'Iquitos',
-    @RumboFiltro = 'Norte-Oeste',
-    @FechaFiltro = '2025-10-25';
-
-CREATE TABLE Ventas (
-    IdVenta INT PRIMARY KEY,
-    FechaVenta DATE,
-    HoraVenta DATETIME,
-    Tienda VARCHAR(50),
-    CategoriaProducto VARCHAR(50),
-    Monto DECIMAL(10,2)
-);
-DECLARE @CategoriaFiltro VARCHAR(50) = 'Electrodomésticos';
-DECLARE @TiendaFiltro VARCHAR(50) = 'Tienda Central';
-DECLARE @FechaFiltro DATE = '2025-10-26';
-
--- Grupo 1: Ventas por categoría
-SELECT 
-    'Grupo: Categoría ' + @CategoriaFiltro AS Grupo,
-    COUNT(*) AS TotalVentas,
-    SUM(Monto) AS MontoTotal,
-    MIN(Monto) AS VentaMinima,
-    MAX(Monto) AS VentaMaxima,
-    AVG(Monto) AS PromedioVenta,
-    MIN(HoraVenta) AS PrimeraVenta,
-    MAX(HoraVenta) AS UltimaVenta
-FROM Ventas
-WHERE CategoriaProducto = @CategoriaFiltro AND FechaVenta = @FechaFiltro
-
-UNION ALL
-
--- Grupo 2: Ventas por tienda
-SELECT 
-    'Grupo: Tienda ' + @TiendaFiltro AS Grupo,
-    COUNT(*) AS TotalVentas,
-    SUM(Monto) AS MontoTotal,
-    MIN(Monto) AS VentaMinima,
-    MAX(Monto) AS VentaMaxima,
-    AVG(Monto) AS PromedioVenta,
-    MIN(HoraVenta) AS PrimeraVenta,
-    MAX(HoraVenta) AS UltimaVenta
-FROM Ventas
-WHERE Tienda = @TiendaFiltro AND FechaVenta = @FechaFiltro;
-
-CREATE TABLE Empleados (
-    ID INT PRIMARY KEY,
-    Nombre VARCHAR(100),
-    Cargo VARCHAR(50),
-    FechaIngreso DATE,
-    Salario DECIMAL(10, 2)
-);
-INSERT INTO Empleados (ID, Nombre, Cargo, FechaIngreso, Salario)
-VALUES
-(1, 'Ana Torres', 'Gerente', '2022-03-15', 8500.00),
-(2, 'Luis Pérez', 'Analista', '2023-01-10', 5200.00),
-(3, 'María Gómez', 'Desarrollador', '2024-06-01', 6000.00);
-
-CREATE TABLE Departamentos (
-    DepartamentoID INT PRIMARY KEY,
-    NombreDepartamento VARCHAR(100),
-    Ubicacion VARCHAR(100)
-);
-INSERT INTO Departamentos (DepartamentoID, NombreDepartamento, Ubicacion)
-VALUES
-(1, 'Recursos Humanos', 'Arequipa'),
-(2, 'TI', 'Lima'),
-(3, 'Finanzas', 'Cusco');
-INSERT INTO Empleados (EmpleadoID, Nombre, Cargo, DepartamentoID, FechaIngreso)
-VALUES
-(101, 'Carlos Ruiz', 'Analista', 2, '2023-05-10'),
-(102, 'Lucía Mendoza', 'Contadora', 3, '2022-11-20'),
-(103, 'Jorge Salas', 'Reclutador', 1, '2024-01-15');
-SELECT e.Nombre, e.Cargo, d.NombreDepartamento, d.Ubicacion
-FROM Empleados e
-JOIN Departamentos d ON e.DepartamentoID = d.DepartamentoID;
+    Especialidad,
+    COUNT(*) AS TotalAtenciones,
+    SUM(Costo) AS MontoTotal,
+    MIN(FechaAtencion) AS PrimeraFecha,
+    MAX(FechaAtencion) AS UltimaFecha,
+    MIN(HoraEntrada) AS EntradaMasTemprana,
+    MAX(HoraSalida) AS SalidaMasTardia,
+    AVG(DATEDIFF(MINUTE, HoraEntrada, HoraSalida)) / 60.0 AS PromedioHorasPorAtencion,
+    FORMAT(MAX(HoraSalida), 'HH:mm') AS UltimaHoraFormateada,
+    FORMAT(MIN(FechaAtencion), 'dddd dd MMM yyyy') AS FechaInicioFormateada
+FROM Atenciones
+WHERE FechaAtencion BETWEEN @FechaInicio AND @FechaFin
+  AND Especialidad = @EspecialidadFiltro
+GROUP BY Especialidad
+ORDER BY MontoTotal DESC;
