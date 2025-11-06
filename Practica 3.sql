@@ -47,3 +47,82 @@ VALUES (1, 12, GETDATE());
 
 SELECT * FROM Productos;
 SELECT * FROM Ventas;
+
+
+
+
+-- =====================================
+CREATE TABLE Productos (
+    IdProducto INT PRIMARY KEY,
+    Nombre NVARCHAR(50),
+    Stock INT
+);
+
+CREATE TABLE Ventas (
+    IdVenta INT IDENTITY PRIMARY KEY,
+    IdProducto INT,
+    Cantidad INT,
+    Fecha DATETIME,
+    FOREIGN KEY (IdProducto) REFERENCES Productos(IdProducto)
+);
+INSERT INTO Productos VALUES (1, 'Teclado mecánico', 10);
+INSERT INTO Productos VALUES (2, 'Mouse gamer', 3);
+INSERT INTO Productos VALUES (3, 'Monitor 24"', 8);
+
+BEGIN TRY
+    BEGIN TRANSACTION;
+
+    DECLARE @IdProducto INT, @Cantidad INT, @StockActual INT;
+
+    -- CURSOR: recorrerá una lista de productos con sus cantidades a vender
+    DECLARE cursorVentas CURSOR FOR
+    SELECT IdProducto, Cantidad
+    FROM (VALUES
+        (1, 2),   -- Producto 1: vender 2 unidades
+        (2, 5),   -- Producto 2: vender 5 unidades (provocará error)
+        (3, 1)    -- Producto 3: vender 1 unidad
+    ) AS ListaVentas(IdProducto, Cantidad);
+
+    OPEN cursorVentas;
+
+    FETCH NEXT FROM cursorVentas INTO @IdProducto, @Cantidad;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        -- Consultar stock actual
+        SET @StockActual = (SELECT Stock FROM Productos WHERE IdProducto = @IdProducto);
+
+        -- Verificar si hay suficiente stock
+        IF @StockActual < @Cantidad
+        BEGIN
+            THROW 50005, 'Error: stock insuficiente para el producto.', 1;
+        END
+
+        -- Registrar la venta
+        INSERT INTO Ventas (IdProducto, Cantidad, Fecha)
+        VALUES (@IdProducto, @Cantidad, GETDATE());
+
+        -- Actualizar el stock
+        UPDATE Productos
+        SET Stock = Stock - @Cantidad
+        WHERE IdProducto = @IdProducto;
+
+        PRINT 'Venta procesada para el producto ' + CAST(@IdProducto AS NVARCHAR);
+
+        FETCH NEXT FROM cursorVentas INTO @IdProducto, @Cantidad;
+    END;
+
+    CLOSE cursorVentas;
+    DEALLOCATE cursorVentas;
+
+    COMMIT TRANSACTION;
+    PRINT 'Todas las ventas se completaron exitosamente.';
+
+END TRY
+BEGIN CATCH
+    -- Si ocurre un error, revertimos los cambios
+    ROLLBACK TRANSACTION;
+    CLOSE cursorVentas;
+    DEALLOCATE cursorVentas;
+    PRINT 'Error en la transacción: ' + ERROR_MESSAGE();
+END CATCH;
