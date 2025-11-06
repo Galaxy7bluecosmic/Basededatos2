@@ -41,3 +41,9 @@ BEGIN CATCH
     ROLLBACK TRANSACTION;
     PRINT ' Error en la transacción: ' + ERROR_MESSAGE();
 END CATCH;
+
+INSERT INTO Ventas (IdProducto, Cantidad, Fecha)
+VALUES (1, 12, GETDATE());
+
+SELECT * FROM Productos;
+SELECT * FROM Ventas;
