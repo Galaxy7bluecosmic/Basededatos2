@@ -28,3 +28,34 @@ WHERE FechaAtencion BETWEEN @FechaInicio AND @FechaFin
   AND Especialidad = @EspecialidadFiltro
 GROUP BY Especialidad
 ORDER BY MontoTotal DESC;
+
+CREATE TABLE InventarioMovimientos (
+    IdMovimiento INT PRIMARY KEY,
+    Producto VARCHAR(100),
+    Categoria VARCHAR(50),
+    Almacen VARCHAR(50),
+    TipoMovimiento VARCHAR(10), -- 'Entrada' o 'Salida'
+    FechaMovimiento DATE,
+    HoraMovimiento DATETIME,
+    Cantidad INT
+);
+DECLARE @FechaInicio DATE = '2025-11-01';
+DECLARE @FechaFin DATE = '2025-11-05';
+DECLARE @AlmacenFiltro VARCHAR(50) = 'Almacen Sur';
+
+SELECT 
+    Categoria,
+    Almacen,
+    TipoMovimiento,
+    COUNT(*) AS TotalMovimientos,
+    SUM(Cantidad) AS TotalCantidad,
+    AVG(Cantidad) AS PromedioPorMovimiento,
+    MIN(HoraMovimiento) AS MovimientoMasTemprano,
+    MAX(HoraMovimiento) AS MovimientoMasTardio,
+    FORMAT(MAX(HoraMovimiento), 'HH:mm:ss') AS UltimaHoraFormateada,
+    AVG(DATEDIFF(MINUTE, CAST(FechaMovimiento AS DATETIME), HoraMovimiento)) AS PromedioMinutosDesdeMedianoche
+FROM InventarioMovimientos
+WHERE FechaMovimiento BETWEEN @FechaInicio AND @FechaFin
+  AND Almacen = @AlmacenFiltro
+GROUP BY Categoria, Almacen, TipoMovimiento
+ORDER BY Categoria, TipoMovimiento, TotalCantidad DESC;
