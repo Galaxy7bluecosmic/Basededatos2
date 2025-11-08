@@ -1,61 +1,29 @@
-CREATE TABLE Atenciones (
-    IdAtencion INT PRIMARY KEY,
-    IdPaciente INT,
-    NombrePaciente VARCHAR(100),
-    Especialidad VARCHAR(50),
-    FechaAtencion DATE,
-    HoraEntrada DATETIME,
-    HoraSalida DATETIME,
-    Costo DECIMAL(10,2)
-);
-DECLARE @FechaInicio DATE = '2025-10-01';
-DECLARE @FechaFin DATE = '2025-10-31';
-DECLARE @EspecialidadFiltro VARCHAR(50) = 'Cardiología';
-
-SELECT 
-    Especialidad,
-    COUNT(*) AS TotalAtenciones,
-    SUM(Costo) AS MontoTotal,
-    MIN(FechaAtencion) AS PrimeraFecha,
-    MAX(FechaAtencion) AS UltimaFecha,
-    MIN(HoraEntrada) AS EntradaMasTemprana,
-    MAX(HoraSalida) AS SalidaMasTardia,
-    AVG(DATEDIFF(MINUTE, HoraEntrada, HoraSalida)) / 60.0 AS PromedioHorasPorAtencion,
-    FORMAT(MAX(HoraSalida), 'HH:mm') AS UltimaHoraFormateada,
-    FORMAT(MIN(FechaAtencion), 'dddd dd MMM yyyy') AS FechaInicioFormateada
-FROM Atenciones
-WHERE FechaAtencion BETWEEN @FechaInicio AND @FechaFin
-  AND Especialidad = @EspecialidadFiltro
-GROUP BY Especialidad
-ORDER BY MontoTotal DESC;
-
-CREATE TABLE InventarioMovimientos (
-    IdMovimiento INT PRIMARY KEY,
-    Producto VARCHAR(100),
-    Categoria VARCHAR(50),
-    Almacen VARCHAR(50),
-    TipoMovimiento VARCHAR(10), -- 'Entrada' o 'Salida'
-    FechaMovimiento DATE,
-    HoraMovimiento DATETIME,
-    Cantidad INT
-);
+CREATE TABLE Examenes (
+    IdExamen INT PRIMARY KEY,
+    IdAlumno INT,
+    NombreAlumno VARCHAR(100),
+    Curso VARCHAR(50),
+    FechaExamen DATE,
+    HoraInicio DATETIME,
+    HoraFin DATETIME,
+    Nota DECIMAL(4,2)
+);DECLARE @CursoFiltro VARCHAR(50) = 'Matemáticas';
 DECLARE @FechaInicio DATE = '2025-11-01';
-DECLARE @FechaFin DATE = '2025-11-05';
-DECLARE @AlmacenFiltro VARCHAR(50) = 'Almacen Sur';
+DECLARE @FechaFin DATE = '2025-11-15';
 
 SELECT 
-    Categoria,
-    Almacen,
-    TipoMovimiento,
-    COUNT(*) AS TotalMovimientos,
-    SUM(Cantidad) AS TotalCantidad,
-    AVG(Cantidad) AS PromedioPorMovimiento,
-    MIN(HoraMovimiento) AS MovimientoMasTemprano,
-    MAX(HoraMovimiento) AS MovimientoMasTardio,
-    FORMAT(MAX(HoraMovimiento), 'HH:mm:ss') AS UltimaHoraFormateada,
-    AVG(DATEDIFF(MINUTE, CAST(FechaMovimiento AS DATETIME), HoraMovimiento)) AS PromedioMinutosDesdeMedianoche
-FROM InventarioMovimientos
-WHERE FechaMovimiento BETWEEN @FechaInicio AND @FechaFin
-  AND Almacen = @AlmacenFiltro
-GROUP BY Categoria, Almacen, TipoMovimiento
-ORDER BY Categoria, TipoMovimiento, TotalCantidad DESC;
+    Curso,
+    COUNT(*) AS TotalExamenes,
+    MIN(Nota) AS NotaMinima,
+    MAX(Nota) AS NotaMaxima,
+    AVG(Nota) AS PromedioNotas,
+    MIN(HoraInicio) AS ExamenMasTemprano,
+    MAX(HoraFin) AS ExamenMasTardio,
+    AVG(DATEDIFF(MINUTE, HoraInicio, HoraFin)) AS PromedioDuracionMinutos,
+    FORMAT(MIN(FechaExamen), 'dddd dd MMM yyyy') AS PrimeraFechaFormateada,
+    FORMAT(MAX(FechaExamen), 'dddd dd MMM yyyy') AS UltimaFechaFormateada
+FROM Examenes
+WHERE Curso = @CursoFiltro
+  AND FechaExamen BETWEEN @FechaInicio AND @FechaFin
+GROUP BY Curso
+ORDER BY PromedioNotas DESC;
