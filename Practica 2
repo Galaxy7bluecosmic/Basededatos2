@@ -27,3 +27,35 @@ WHERE Curso = @CursoFiltro
   AND FechaExamen BETWEEN @FechaInicio AND @FechaFin
 GROUP BY Curso
 ORDER BY PromedioNotas DESC;
+
+CREATE TABLE Pagos (
+    IdPago INT PRIMARY KEY,
+    Cliente VARCHAR(100),
+    Categoria VARCHAR(50),       -- Ej: 'Servicios', 'Productos'
+    FechaPago DATE,
+    HoraPago DATETIME,
+    Monto DECIMAL(12,2),
+    MetodoPago VARCHAR(30)       -- Ej: 'Tarjeta', 'Transferencia', 'Efectivo'
+);
+DECLARE @FechaInicio DATE = '2025-11-01';
+DECLARE @FechaFin DATE = '2025-11-30';
+DECLARE @CategoriaFiltro VARCHAR(50) = 'Servicios';
+
+SELECT 
+    Categoria,
+    MetodoPago,
+    COUNT(*) AS TotalPagos,
+    SUM(Monto) AS MontoTotal,
+    MIN(Monto) AS PagoMinimo,
+    MAX(Monto) AS PagoMaximo,
+    AVG(Monto) AS PromedioPago,
+    MIN(HoraPago) AS PrimerPagoDelDia,
+    MAX(HoraPago) AS UltimoPagoDelDia,
+    FORMAT(MIN(FechaPago), 'dd/MM/yyyy') AS PrimeraFecha,
+    FORMAT(MAX(FechaPago), 'dd/MM/yyyy') AS UltimaFecha,
+    AVG(DATEDIFF(MINUTE, CAST(FechaPago AS DATETIME), HoraPago)) AS PromedioMinutosDesdeMedianoche
+FROM Pagos
+WHERE FechaPago BETWEEN @FechaInicio AND @FechaFin
+  AND Categoria = @CategoriaFiltro
+GROUP BY Categoria, MetodoPago
+ORDER BY MontoTotal DESC, PromedioPago DESC;
