@@ -126,3 +126,88 @@ BEGIN CATCH
     DEALLOCATE cursorVentas;
     PRINT 'Error en la transacción: ' + ERROR_MESSAGE();
 END CATCH;
+
+--------------------------------------------------------------
+CREATE TABLE Empleados (
+    IdEmpleado INT PRIMARY KEY,
+    Nombre NVARCHAR(50),
+    Saldo DECIMAL(10,2)
+);
+
+CREATE TABLE Pagos (
+    IdPago INT IDENTITY PRIMARY KEY,
+    IdEmpleado INT,
+    Monto DECIMAL(10,2),
+    Fecha DATETIME,
+    FOREIGN KEY (IdEmpleado) REFERENCES Empleados(IdEmpleado)
+);
+
+-- =====================================
+-- DATOS DE PRUEBA
+-- =====================================
+INSERT INTO Empleados VALUES (1, 'Ana Torres', 1500.00);
+INSERT INTO Empleados VALUES (2, 'Luis Pérez', 800.00);
+INSERT INTO Empleados VALUES (3, 'María Gómez', 2000.00);
+
+-- =====================================
+-- CURSOR CON TRANSACCIÓN Y THROW
+-- =====================================
+BEGIN TRY
+    BEGIN TRANSACTION;
+
+    DECLARE @IdEmpleado INT, @Monto DECIMAL(10,2), @SaldoActual DECIMAL(10,2);
+
+    -- CURSOR: lista de pagos a realizar
+    DECLARE cursorPagos CURSOR FOR
+    SELECT IdEmpleado, Monto
+    FROM (VALUES
+        (1, 500.00),   -- Pago válido
+        (2, 1000.00),  -- Error: saldo insuficiente
+        (3, 200.00)    -- Este ya no se procesará por el error anterior
+    ) AS ListaPagos(IdEmpleado, Monto);
+
+    OPEN cursorPagos;
+
+    FETCH NEXT FROM cursorPagos INTO @IdEmpleado, @Monto;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        -- Consultar saldo actual del empleado
+        SET @SaldoActual = (SELECT Saldo FROM Empleados WHERE IdEmpleado = @IdEmpleado);
+
+        -- Validar si tiene suficiente saldo
+        IF @SaldoActual < @Monto
+        BEGIN
+            THROW 60001, 'Error: saldo insuficiente para realizar el pago.', 1;
+        END
+
+        -- Registrar el pago
+        INSERT INTO Pagos (IdEmpleado, Monto, Fecha)
+        VALUES (@IdEmpleado, @Monto, GETDATE());
+
+        -- Descontar del saldo
+        UPDATE Empleados
+        SET Saldo = Saldo - @Monto
+        WHERE IdEmpleado = @IdEmpleado;
+
+        PRINT 'Pago procesado correctamente para el empleado ' + CAST(@IdEmpleado AS NVARCHAR);
+
+        FETCH NEXT FROM cursorPagos INTO @IdEmpleado, @Monto;
+    END;
+
+    CLOSE cursorPagos;
+    DEALLOCATE cursorPagos;
+
+    COMMIT TRANSACTION;
+    PRINT ' Todos los pagos se realizaron correctamente.';
+
+END TRY
+BEGIN CATCH
+    -- Si hay error, se revierte todo
+    ROLLBACK TRANSACTION;
+    CLOSE cursorPagos;
+    DEALLOCATE cursorPagos;
+    PRINT ' Error en el proceso: ' + ERROR_MESSAGE();
+END CATCH;
+SELECT * FROM Empleados;
+SELECT * FROM Pagos;
