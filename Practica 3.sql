@@ -211,3 +211,41 @@ BEGIN CATCH
 END CATCH;
 SELECT * FROM Empleados;
 SELECT * FROM Pagos;
+
+-- =====================================
+-- TABLAS DE EJEMPLO
+-- =====================================
+CREATE TABLE Libros (
+    IdLibro INT PRIMARY KEY,
+    Titulo NVARCHAR(100),
+    Precio DECIMAL(10,2)
+);
+
+-- =====================================
+-- DATOS DE PRUEBA
+-- =====================================
+INSERT INTO Libros VALUES (1, 'El Principito', 35.00);
+INSERT INTO Libros VALUES (2, 'Cien años de soledad', 50.00);
+INSERT INTO Libros VALUES (3, 'Don Quijote de la Mancha', 0.00); -- Error: precio no válido
+INSERT INTO Libros VALUES (4, '1984', 42.50);
+
+-- =====================================
+-- CURSOR CON TRANSACCIÓN Y THROW
+-- =====================================
+BEGIN TRY
+    BEGIN TRANSACTION;
+
+    DECLARE @IdLibro INT, @Titulo NVARCHAR(100), @Precio DECIMAL(10,2);
+
+    -- Cursor para recorrer los libros
+    DECLARE cursorLibros CURSOR FOR
+    SELECT IdLibro, Titulo, Precio FROM Libros;
+
+    OPEN cursorLibros;
+
+    FETCH NEXT FROM cursorLibros INTO @IdLibro, @Titulo, @Precio;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        -- Validar que el precio sea válido
+SELECT * FROM Libros;
