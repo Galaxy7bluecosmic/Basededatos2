@@ -249,3 +249,72 @@ BEGIN TRY
     BEGIN
         -- Validar que el precio sea válido
 SELECT * FROM Libros;
+
+CREATE TABLE Cuentas (
+    IdCuenta INT PRIMARY KEY,
+    Titular NVARCHAR(50),
+    Saldo DECIMAL(10,2)
+);
+
+CREATE TABLE TransferenciasPendientes (
+    IdTransferencia INT PRIMARY KEY,
+    IdCuentaOrigen INT,
+    IdCuentaDestino INT,
+    Monto DECIMAL(10,2),
+    Procesado BIT DEFAULT 0
+);
+INSERT INTO Cuentas VALUES (1, 'Carlos', 1000.00);
+INSERT INTO Cuentas VALUES (2, 'Ana', 800.00);
+INSERT INTO Cuentas VALUES (3, 'Luis', 500.00);
+
+INSERT INTO TransferenciasPendientes VALUES (1, 1, 2, 200.00, 0);
+INSERT INTO TransferenciasPendientes VALUES (2, 2, 3, 300.00, 0);
+DECLARE @IdTransferencia INT, @Origen INT, @Destino INT, @Monto DECIMAL(10,2);
+
+DECLARE transfer_cursor CURSOR FOR
+    SELECT IdTransferencia, IdCuentaOrigen, IdCuentaDestino, Monto
+    FROM TransferenciasPendientes
+    WHERE Procesado = 0;
+
+OPEN transfer_cursor;
+
+FETCH NEXT FROM transfer_cursor INTO @IdTransferencia, @Origen, @Destino, @Monto;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Restar del origen
+        UPDATE Cuentas
+        SET Saldo = Saldo - @Monto
+        WHERE IdCuenta = @Origen;
+
+        -- Validar si tiene saldo suficiente
+        IF (SELECT Saldo FROM Cuentas WHERE IdCuenta = @Origen) < 0
+            THROW 51000, 'Saldo insuficiente en cuenta origen.', 1;
+
+        -- Sumar al destino
+        UPDATE Cuentas
+        SET Saldo = Saldo + @Monto
+        WHERE IdCuenta = @Destino;
+
+        -- Marcar transferencia como procesada
+        UPDATE TransferenciasPendientes
+        SET Procesado = 1
+        WHERE IdTransferencia = @IdTransferencia;
+
+        COMMIT TRANSACTION;
+        PRINT 'Transferencia procesada correctamente.';
+    END TRY
+
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        PRINT 'Error en la transferencia: ' + ERROR_MESSAGE();
+    END CATCH;
+
+    FETCH NEXT FROM transfer_cursor INTO @IdTransferencia, @Origen, @Destino, @Monto;
+END
+
+CLOSE transfer_cursor;
+DEALLOCATE transfer_cursor;
