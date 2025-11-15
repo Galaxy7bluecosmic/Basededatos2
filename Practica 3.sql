@@ -61,3 +61,12 @@ END
 
 CLOSE ventas_cursor;
 DEALLOCATE ventas_cursor;
+CREATE TABLE Produccion (
+    IdRegistro INT PRIMARY KEY,
+    Maquina VARCHAR(50),
+    Turno VARCHAR(20),          -- Ej: 'Mañana', 'Tarde', 'Noche'
+    Fecha DATE,
+    HoraInicio DATETIME,
+    HoraFin DATETIME,
+    UnidadesProducidas INT
+);
