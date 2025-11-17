@@ -59,3 +59,8 @@ WHERE FechaPago BETWEEN @FechaInicio AND @FechaFin
   AND Categoria = @CategoriaFiltro
 GROUP BY Categoria, MetodoPago
 ORDER BY MontoTotal DESC, PromedioPago DESC;
+
+From Pagos
+where FechaPago if @FechaInico< 20
+grup by categoria, metododepago
+order by montoTotal;
